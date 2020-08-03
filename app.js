@@ -13,7 +13,7 @@
 var grid = [],
   initialGrid = [],
   dimension = 0;
-
+// generate board
 function generateBlackBox(dim, noOfDeflectors) {
   dimension = dim;
   // check valid input
@@ -57,20 +57,18 @@ function generateBlackBox(dim, noOfDeflectors) {
     return value === 1 ? "/" : "\\";
   }
 }
-
+// print table
 function printArray(gridToPrint) {
   var arr = gridToPrint.map((item) => item.join("  ")).join("\n");
   console.log(arr);
 }
-
+// user play command - determines initial array position
 function play(entryPoint) {
   var currentDirection = "",
     noOfEntryPoints = Math.pow(dimension, 2),
     noEntryPointsPerSide = noOfEntryPoints / dimension,
     currentYPosition = 0,
-    currentXPosition = 0,
-    previousYPos = 0,
-    previousXPos = 0;
+    currentXPosition = 0;
 
   // check valid entry
   if (entryPoint >= noOfEntryPoints || !Number.isInteger(entryPoint)) {
@@ -85,15 +83,6 @@ function play(entryPoint) {
   if (entryPoint < noEntryPointsPerSide) {
     currentDirection = "V";
     currentXPosition = entryPoint;
-    console.log(
-      "top side:current direction:" +
-        currentDirection +
-        " current position ([Y, X]): [" +
-        currentYPosition +
-        "," +
-        currentXPosition +
-        "]"
-    );
   } else if (
     entryPoint >= noEntryPointsPerSide &&
     entryPoint < noEntryPointsPerSide * 2
@@ -101,15 +90,6 @@ function play(entryPoint) {
     currentDirection = "<";
     currentXPosition = noEntryPointsPerSide - 1;
     currentYPosition = entryPoint - noEntryPointsPerSide; // this needs logic COLUMN
-    console.log(
-      "right side:current direction",
-      currentDirection +
-        " current position ([Y, X]): [" +
-        currentYPosition +
-        "," +
-        currentXPosition +
-        "]"
-    );
   } else if (
     entryPoint >= noEntryPointsPerSide * 2 &&
     entryPoint < noEntryPointsPerSide * 3
@@ -118,15 +98,6 @@ function play(entryPoint) {
     currentYPosition = noEntryPointsPerSide - 1;
     currentXPosition =
       noEntryPointsPerSide - 1 - (entryPoint - noEntryPointsPerSide * 2); // this needs logic ROW
-    console.log(
-      "bottom side:current direction",
-      currentDirection +
-        " current position ([Y, X]): [" +
-        currentYPosition +
-        "," +
-        currentXPosition +
-        "]"
-    );
   } else if (
     entryPoint >= noEntryPointsPerSide * 3 &&
     entryPoint < noEntryPointsPerSide * 4
@@ -134,105 +105,100 @@ function play(entryPoint) {
     currentDirection = ">";
     currentYPosition =
       noEntryPointsPerSide - 1 - (entryPoint - noEntryPointsPerSide * 3); // this needs logic COLUMN
-    console.log("left side:current direction", currentDirection);
   }
-
   // entry point
-  moveBall();
+  moveBall(currentDirection, currentXPosition, currentYPosition);
+}
 
-  // game logic
+// game logic
+function moveBall(direction, x, y) {
+  // log steps
+  console.log( "Starting directiion:" + direction + " at position([Y,X]): [" + y + "," + x + "]");
+  /<|>/.test(direction) ? moveX(direction, x, y) : moveY(direction, x, y);
+}
 
-  function moveBall() {
-    var isOffGrid =
-      currentYPosition >= noEntryPointsPerSide ||
-      currentXPosition >= noEntryPointsPerSide ||
-      currentYPosition < 0 ||
-      currentXPosition < 0;
-
-    // exit point
-    if (isOffGrid) {
-      grid[previousYPos][previousXPos] = "e";
-      printArray(grid);
-      return console.log(
-        "Exit Point is: [" + previousYPos + "," + previousXPos + "]"
-      );
-    }
-
-    // set previous state
-    previousXPos = currentXPosition;
-    previousYPos = currentYPosition;
-
-    // if first move is a deflector
-
-    //  if(grid[currentYPosition][currentXPosition] === "/"){
-    //   (grid[currentYPosition][currentXPosition] = "\\"
-    //  }
-    //    ? (grid[currentYPosition][currentXPosition] = "\\")
-    //    : grid[currentYPosition][currentXPosition] === "\\"
-    //    ? (grid[currentYPosition][currentXPosition] = "/")
-    //    : null;
-
-    // log steps
+// Vertical Move
+function moveY(direction, x, y) {
+  console.log("y value", y);
+  // check exit points
+  if (y >= grid.length || y < 0) {
+    printArray(grid);
+    var yValue = y < 0 ? y + 1 : y - 1;
     console.log(
-      " steps taken([Y,X]): [" + previousYPos + "," + previousXPos + "]"
+      "Exit Point is: [" + yValue + "," + x + "] going " + direction + " direction"
     );
-    checkDeflector();
-
-    moveBall();
+    return;
   }
 
-  function checkDeflector() {
-    if (currentDirection === "V") {
-      
-      currentYPosition++;
-      if (grid[currentYPosition][currentXPosition] === "/") {
-        console.log("aaa", currentYPosition);
-        grid[currentYPosition][currentXPosition] = "\\";
-        currentDirection = "<";
-        currentXPosition--;
-      } else if (grid[currentYPosition][currentXPosition] === "\\") {
-        grid[currentYPosition][currentXPosition] = "/";
-        currentDirection = ">";
-        currentXPosition++;
-      }
-      return;
-    } else if (currentDirection === "<") {
-      currentXPosition--;
-      if (grid[currentYPosition][currentXPosition] === "/") {
-        grid[currentYPosition][currentXPosition] = "\\";
-        currentDirection = "V";
-        currentYPosition++;
-      } else if (grid[currentYPosition][currentXPosition] === "\\") {
-        grid[currentYPosition][currentXPosition] = "/";
-        currentDirection = "^";
-        currentYPosition--;
-      }
-    } else if (currentDirection === ">") {
-      currentXPosition++;
-      if (grid[currentYPosition][currentXPosition] === "/") {
-        grid[currentYPosition][currentXPosition] = "\\";
-        currentDirection = "^";
-        currentYPosition--;
-      } else if (grid[currentYPosition][currentXPosition] === "\\") {
-        grid[currentYPosition][currentXPosition] = "/";
-        currentDirection = "V";
-        currentYPosition++;
-      }
-    } else if (currentDirection === "^") {
-      currentYPosition--;
-      if (grid[currentYPosition][currentXPosition] === "/") {
-        grid[currentYPosition][currentXPosition] = "\\";
-        currentDirection = ">";
-        currentXPosition++;
-      } else if (grid[currentYPosition][currentXPosition] === "\\") {
-        grid[currentYPosition][currentXPosition] = "/";
-        currentDirection = "<";
-        currentXPosition--;
-      }
+  console.log(
+    "current move: " + direction + " at position([Y,X]): [" + y + "," + x + "]"
+  );
+
+  if (direction === "V") {
+    if (grid[y][x] === "/") {
+      switchDeflector(x, y);
+      moveX("<", x - 1, y);
+    } else if (grid[y][x] === "\\") {
+      switchDeflector(x, y);
+      moveX(">", x + 1, y);
+    } else {
+      moveY("V", x, y + 1);
+    }
+  } else {
+    if (grid[y][x] === "/") {
+      switchDeflector(x, y);
+      moveX(">", x + 1, y);
+    } else if (grid[y][x] === "\\") {
+      switchDeflector(x, y);
+
+      moveX("<", x - 1, y);
+    } else {
+      moveY("^", x, y - 1);
     }
   }
 }
 
-generateBlackBox(4, 16);
+// Horizontal Move
+function moveX(direction, x, y) {
+  console.log('x value', x)
+  // check exit points
+  if (x >= grid.length || x < 0) {
+    var xValue = x < 0 ? x + 1 : x - 1;
+    printArray(grid);
+    console.log("Exit Point is: [" + y + "," + xValue + "] going " + direction + " direction");
+    return; 
+  }
 
-play(2);
+  console.log(
+    "current move:" + direction + " at position([Y,X]): [" + y + "," + x + "]"
+  );
+
+  if (direction === ">") {
+    if (grid[y][x] === "/") {
+      switchDeflector(x, y);
+      moveY("^", x, y - 1);
+    } else if (grid[y][x] === "\\") {
+      switchDeflector(x, y);
+      moveY("V", x, y + 1);
+    } else {
+      moveX(">", x + 1, y);
+    }
+  } else {
+    if (grid[y][x] === "/") {
+      switchDeflector(x, y);
+      moveY("V", x, y + 1);
+    } else if (grid[y][x] === "\\") {
+      switchDeflector(x, y);
+      moveY("^", x, y - 1);
+    } else {
+      moveX("<", x - 1, y);
+    }
+  }
+}
+// Flip deflectors
+function switchDeflector(x,y){
+ grid[y][x] = grid[y][x] === "/" ? "\\" : "/";
+}
+
+generateBlackBox(9, 36);
+play(8);
